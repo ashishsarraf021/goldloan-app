@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Gold Loan Tracker",
-    "slug": "goldloan-tracker",
+    "slug": "ashish-sarraf",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
@@ -14,16 +14,21 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.goldloan.tracker"
+      "bundleIdentifier": "com.goldloan.tracker",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "com.goldloan.tracker"
     },
     "extra": {
-      "apiUrl": "http://localhost:8080/api/v1"
-    },
-    "plugins": [
-      "expo-secure-store"
-    ]
+          "apiUrl": "https://goldloan-app.onrender.com/api/v1",
+          "eas": {
+            "projectId": "b9a0844a-f5fa-4e3a-9ca0-4588ddba8c44"
+          }
+        },
+        "plugins": ["expo-secure-store"],
+        "owner": "ashishsarraf021"
   }
 }
