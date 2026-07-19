@@ -8,7 +8,7 @@ import {
   RefreshControl,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { Button, Card, LoadingScreen } from '../components/UI';
+import { Button, Card, LoadingScreen} from '../components/UI';
 import { api } from '../api/client';
 import { COLORS, formatCurrency, formatDate } from '../utils/constants';
 
@@ -19,6 +19,7 @@ export default function LoanDetailScreen({ route }) {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [applying, setApplying] = useState(false);
 
   const load = async () => {
     try {
@@ -33,6 +34,22 @@ export default function LoanDetailScreen({ route }) {
     } finally {
       setLoading(false);
       setRefreshing(false);
+    }
+  };
+
+  const applyLiveRate = async () => {
+    if (!liveRates) return;
+    setApplying(true);
+    try {
+      await api.updateProfile({
+        gold_rate_per_gram: liveRates.gold_rate_per_gram,
+        silver_rate_per_gram: liveRates.silver_rate_per_gram,
+      });
+      await load();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setApplying(false);
     }
   };
 

@@ -40,6 +40,7 @@ func Setup(db *gorm.DB, cfg *config.Config) *gin.Engine {
 			protected.GET("/profile", authHandler.Profile)
 			protected.PUT("/profile", authHandler.UpdateProfile)
 			protected.GET("/dashboard", dashboardHandler.Summary)
+			protected.GET("/rates/live", handlers.GetLiveRates)
 
 			protected.GET("/customers", customerHandler.List)
 			protected.POST("/customers", customerHandler.Create)
