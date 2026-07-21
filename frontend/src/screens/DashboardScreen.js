@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, RefreshControl } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { StatCard, LoadingScreen } from '../components/UI';
+import { StatCard, LoadingScreen, Button } from '../components/UI';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../api/client';
 import { COLORS, formatCurrency } from '../utils/constants';
@@ -11,16 +11,35 @@ export default function DashboardScreen() {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [liveRates, setLiveRates] = useState(null);
+  const [applying, setApplying] = useState(false);
 
   const load = async () => {
     try {
       const data = await api.getDashboard();
       setStats(data);
+      api.getLiveRates().then(setLiveRates).catch(() => {});
     } catch (err) {
       console.error(err);
     } finally {
       setLoading(false);
       setRefreshing(false);
+    }
+  };
+
+  const applyLiveRate = async () => {
+    if (!liveRates) return;
+    setApplying(true);
+    try {
+      await api.updateProfile({
+        gold_rate_per_gram: liveRates.gold_rate_per_gram,
+        silver_rate_per_gram: liveRates.silver_rate_per_gram,
+      });
+      await load();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setApplying(false);
     }
   };
 
@@ -42,6 +61,21 @@ export default function DashboardScreen() {
         <Text style={styles.shopName}>{shopkeeper?.shop_name}</Text>
       </View>
 
+      {liveRates && (
+        <View style={styles.rates}>
+          <Text style={styles.ratesTitle}>Live Market Rate</Text>
+          <Text style={styles.rateRow}>🥇 Gold: {formatCurrency(liveRates.gold_rate_per_gram)}/g</Text>
+          <Text style={styles.rateRow}>🥈 Silver: {formatCurrency(liveRates.silver_rate_per_gram)}/g</Text>
+          <Text style={styles.hint}>Source: {liveRates.source}</Text>
+          <Button
+            title="Apply Live Rate to My Shop"
+            variant="outline"
+            loading={applying}
+            onPress={applyLiveRate}
+          />
+        </View>
+      )}
+
       <View style={styles.grid}>
         <StatCard label="Active Loans" value={String(stats?.active_loans || 0)} />
         <StatCard label="Customers" value={String(stats?.total_customers || 0)} color={COLORS.secondary} />
@@ -56,13 +90,6 @@ export default function DashboardScreen() {
           value={formatCurrency(stats?.total_jewelry_value)}
           color={COLORS.success}
         />
-      </View>
-
-      <View style={styles.rates}>
-        <Text style={styles.ratesTitle}>Current Rates</Text>
-        <Text style={styles.rateRow}>🥇 Gold: {formatCurrency(stats?.gold_rate_per_gram)}/g</Text>
-        <Text style={styles.rateRow}>🥈 Silver: {formatCurrency(stats?.silver_rate_per_gram)}/g</Text>
-        <Text style={styles.hint}>Update rates in Settings</Text>
       </View>
     </ScrollView>
   );

@@ -21,6 +21,7 @@ type Config struct {
 	ReminderCron          string
 	DefaultGoldRate         float64
 	DefaultSilverRate       float64
+	GoldAPIKey 				string
 }
 
 func Load() (*Config, error) {
@@ -40,6 +41,7 @@ func Load() (*Config, error) {
 		ReminderCron:          getEnv("REMINDER_CRON", "0 9 * * *"),
 		DefaultGoldRate:       getEnvFloat("DEFAULT_GOLD_RATE_PER_GRAM", 6500),
 		DefaultSilverRate:     getEnvFloat("DEFAULT_SILVER_RATE_PER_GRAM", 85),
+		GoldAPIKey: 		   getEnv("GOLDAPI_KEY",""),
 	}
 	return cfg, nil
 }

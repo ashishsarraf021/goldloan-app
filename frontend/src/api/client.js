@@ -138,6 +138,10 @@ class ApiClient {
   getReminderLogs(id) {
     return this.request(`/loans/${id}/reminders`);
   }
+
+  getLiveRates() {
+    return this.request('/rates/live');
+  }
 }
 
 export const api = new ApiClient();
