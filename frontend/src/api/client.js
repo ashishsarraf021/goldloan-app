@@ -71,6 +71,32 @@ class ApiClient {
     });
   }
 
+  // Categories
+  getCategories() {
+    return this.request('/categories');
+  }
+  createCategory(payload) {
+    return this.request('/categories', { method: 'POST', body: JSON.stringify(payload) });
+  }
+
+  // Orders
+  getOrders(status) {
+    const query = status && status !== 'ALL' ? `?status=${encodeURIComponent(status)}` : '';
+    return this.request(`/orders${query}`);
+  }
+  getOrder(id) {
+    return this.request(`/orders/${id}`);
+  }
+  createOrder(payload) {
+    return this.request('/orders', { method: 'POST', body: JSON.stringify(payload) });
+  }
+  addOrderPayment(orderId, payload) {
+    return this.request(`/orders/${orderId}/payments`, { method: 'POST', body: JSON.stringify(payload) });
+  }
+  settleOrder(orderId, payload) {
+    return this.request(`/orders/${orderId}/settle`, { method: 'POST', body: JSON.stringify(payload) });
+  }
+
   // Dashboard
   getDashboard() {
     return this.request('/dashboard');

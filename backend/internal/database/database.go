@@ -41,6 +41,9 @@ func Connect(cfg *config.Config) (*gorm.DB, error) {
 		&models.Loan{},
 		&models.JewelryItem{},
 		&models.ReminderLog{},
+		&models.Category{},
+		&models.Order{},
+		&models.OrderPayment{},
 	); err != nil {
 		return nil, fmt.Errorf("migrate: %w", err)
 	}

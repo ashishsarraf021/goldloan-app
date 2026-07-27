@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { Button, Input } from '../components/UI';
 import { useAuth } from '../context/AuthContext';
-import { COLORS } from '../utils/constants';
+import { COLORS, RADIUS } from '../utils/constants';
 
 export default function LoginScreen({ navigation }) {
   const { login } = useAuth();
@@ -39,34 +39,44 @@ export default function LoginScreen({ navigation }) {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <ScrollView contentContainerStyle={styles.scroll}>
-        <View style={styles.header}>
-          <Text style={styles.logo}>🏪</Text>
-          <Text style={styles.title}>Gold Loan Tracker</Text>
-          <Text style={styles.subtitle}>Manage jewelry loans for your shop</Text>
+        <View style={styles.brandBadge}>
+          <Text style={styles.brandIcon}>💎</Text>
         </View>
 
-        <Input
-          label="Phone Number"
-          value={phone}
-          onChangeText={setPhone}
-          keyboardType="phone-pad"
-          placeholder="9876543210"
-        />
-        <Input
-          label="Password"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          placeholder="Enter password"
-        />
+        <View style={styles.header}>
+          <View style={styles.titleRow}>
+            <Text style={styles.title}>Aureus</Text>
+            <View style={styles.shopTag}>
+              <Text style={styles.shopTagText}>GOLD SHOP</Text>
+            </View>
+          </View>
+          <Text style={styles.subtitle}>Secure Loan & Custom Orders</Text>
+        </View>
 
-        <Button title="Login" onPress={handleLogin} loading={loading} />
+        <View style={styles.card}>
+          <Input
+            label="Phone Number"
+            value={phone}
+            onChangeText={setPhone}
+            keyboardType="phone-pad"
+            placeholder="9876543210"
+          />
+          <Input
+            label="Password"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+            placeholder="Enter password"
+          />
 
-        <Button
-          title="Create New Account"
-          variant="outline"
-          onPress={() => navigation.navigate('Register')}
-        />
+          <Button title="Login" onPress={handleLogin} loading={loading} />
+
+          <Button
+            title="Create New Account"
+            variant="outline"
+            onPress={() => navigation.navigate('Register')}
+          />
+        </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -75,8 +85,42 @@ export default function LoginScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.background },
   scroll: { flexGrow: 1, padding: 24, justifyContent: 'center' },
-  header: { alignItems: 'center', marginBottom: 32 },
-  logo: { fontSize: 48, marginBottom: 8 },
-  title: { fontSize: 26, fontWeight: '700', color: COLORS.secondary },
-  subtitle: { fontSize: 14, color: COLORS.textLight, marginTop: 4 },
+  brandBadge: {
+    alignSelf: 'center',
+    width: 64,
+    height: 64,
+    borderRadius: RADIUS.xl,
+    backgroundColor: COLORS.primaryLight,
+    borderWidth: 1,
+    borderColor: COLORS.amberBorder,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  brandIcon: { fontSize: 28 },
+  header: { alignItems: 'center', marginBottom: 28 },
+  titleRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  title: { fontSize: 26, fontWeight: '800', color: COLORS.secondary, letterSpacing: -0.5 },
+  shopTag: {
+    backgroundColor: '#FEF3C7',
+    borderWidth: 1,
+    borderColor: COLORS.amberBorder,
+    borderRadius: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  shopTagText: { fontSize: 9, fontWeight: '800', color: '#92400E' },
+  subtitle: { fontSize: 13, color: COLORS.textLight, marginTop: 6 },
+  card: {
+    backgroundColor: COLORS.white,
+    borderRadius: RADIUS.xl,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    padding: 20,
+    shadowColor: '#0F172A',
+    shadowOpacity: 0.05,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 12,
+    elevation: 2,
+  },
 });

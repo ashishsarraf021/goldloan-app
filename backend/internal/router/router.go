@@ -23,6 +23,8 @@ func Setup(db *gorm.DB, cfg *config.Config) *gin.Engine {
 	loanHandler := handlers.NewLoanHandler(db, cfg, whatsapp)
 	dashboardHandler := handlers.NewDashboardHandler(db)
 	reminderHandler := handlers.NewReminderHandler(scheduler)
+	categoryHandler := handlers.NewCategoryHandler(db)
+	orderHandler := handlers.NewOrderHandler(db)
 
 	r.GET("/health", handlers.HealthCheck)
 
@@ -57,6 +59,16 @@ func Setup(db *gorm.DB, cfg *config.Config) *gin.Engine {
 			protected.GET("/loans/:id/reminders", loanHandler.ReminderLogs)
 
 			protected.POST("/reminders/run", reminderHandler.TriggerAll)
+
+			protected.GET("/categories", categoryHandler.List)
+			protected.POST("/categories", categoryHandler.Create)
+			protected.DELETE("/categories/:id", categoryHandler.Delete)
+
+			protected.GET("/orders", orderHandler.List)
+			protected.GET("/orders/:id", orderHandler.Get)
+			protected.POST("/orders", orderHandler.Create)
+			protected.POST("/orders/:id/payments", orderHandler.AddPayment)
+			protected.POST("/orders/:id/settle", orderHandler.Settle)
 		}
 	}
 
