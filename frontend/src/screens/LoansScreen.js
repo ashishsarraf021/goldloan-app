@@ -1,133 +1,104 @@
 import React, { useCallback, useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  FlatList,
-  TouchableOpacity,
-  RefreshControl,
-} from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Linking } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { EmptyState, LoadingScreen } from '../components/UI';
+import { Card, LoadingScreen, FilterTabs, Badge } from '../components/UI';
 import { api } from '../api/client';
-import { COLORS, formatCurrency, formatDate } from '../utils/constants';
+import { COLORS, RADIUS, formatCurrency, formatDate } from '../utils/constants';
 
 export default function LoansScreen({ navigation }) {
   const [loans, setLoans] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const [filter, setFilter] = useState('active');
+  const [loading, setLoading] = useState(true);
 
   const load = async () => {
     try {
-      const data = await api.getLoans(filter);
+      const data = await api.getLoans(filter === 'all' ? undefined : filter);
       setLoans(data || []);
     } catch (err) {
       console.error(err);
     } finally {
       setLoading(false);
-      setRefreshing(false);
     }
   };
 
-  useFocusEffect(
-    useCallback(() => {
-      setLoading(true);
-      load();
-    }, [filter])
-  );
+  useFocusEffect(useCallback(() => { load(); }, [filter]));
 
   if (loading) return <LoadingScreen />;
 
   return (
     <View style={styles.container}>
-      <View style={styles.filters}>
-        {['active', 'closed', ''].map((f) => (
-          <TouchableOpacity
-            key={f || 'all'}
-            style={[styles.filterBtn, filter === f && styles.filterActive]}
-            onPress={() => setFilter(f)}
-          >
-            <Text style={[styles.filterText, filter === f && styles.filterTextActive]}>
-              {f === '' ? 'All' : f.charAt(0).toUpperCase() + f.slice(1)}
-            </Text>
-          </TouchableOpacity>
-        ))}
+      <View style={styles.headerRow}>
+        <View>
+          <Text style={styles.title}>Gold Loan Portfolio</Text>
+          <Text style={styles.subtitle}>Pledged jewelry & interest tracking</Text>
+        </View>
+        <TouchableOpacity style={styles.addBtn} onPress={() => navigation.navigate('AddLoan')}>
+          <Text style={styles.addBtnText}>+ Issue Loan</Text>
+        </TouchableOpacity>
+      </View>
+
+      <View style={{ paddingHorizontal: 16, marginTop: 12 }}>
+        <FilterTabs options={['active', 'closed', 'all']} value={filter} onChange={setFilter} />
       </View>
 
       <FlatList
         data={loans}
         keyExtractor={(item) => String(item.id)}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); load(); }} />
-        }
-        ListEmptyComponent={<EmptyState message="No loans found." />}
+        contentContainerStyle={{ padding: 16 }}
         renderItem={({ item }) => (
-          <TouchableOpacity
-            style={styles.item}
-            onPress={() => navigation.navigate('LoanDetail', { loanId: item.id })}
-          >
-            <View style={styles.row}>
-              <Text style={styles.loanNo}>{item.loan_number}</Text>
-              <View style={[styles.badge, item.status === 'active' ? styles.badgeActive : styles.badgeClosed]}>
-                <Text style={styles.badgeText}>{item.status}</Text>
+          <Card style={{ marginBottom: 12 }}>
+            <View style={styles.rowTop}>
+              <View>
+                <Text style={styles.loanNumber}>{item.loan_number}</Text>
+                <Text style={styles.customerName}>{item.customer?.name}</Text>
+                <Text style={styles.loanDate}>Loan Date: {formatDate(item.loan_date)}</Text>
+              </View>
+              <Badge label={item.status} tone={item.status === 'active' ? 'success' : 'default'} />
+            </View>
+
+            <View style={styles.footerRow}>
+              <View>
+                <Text style={styles.footerLabel}>Principal @ Interest</Text>
+                <Text style={styles.footerValue}>{formatCurrency(item.principal_amount)} <Text style={styles.footerAccent}>@ {item.interest_rate}%</Text></Text>
               </View>
             </View>
-            <Text style={styles.customer}>{item.customer?.name || 'Customer'}</Text>
-            <Text style={styles.amount}>{formatCurrency(item.principal_amount)} @ {item.interest_rate}%</Text>
-            <Text style={styles.date}>Loan Date: {formatDate(item.loan_date)}</Text>
-          </TouchableOpacity>
+
+            <View style={styles.actionsRow}>
+              <TouchableOpacity
+                style={styles.waBtn}
+                onPress={() => Linking.openURL(`https://wa.me/${item.customer?.whatsapp || item.customer?.phone}`)}
+              >
+                <Text style={styles.waBtnText}>💬 Send Reminder</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.detailBtn} onPress={() => navigation.navigate('LoanDetail', { loanId: item.id })}>
+                <Text style={styles.detailBtnText}>Full Summary</Text>
+              </TouchableOpacity>
+            </View>
+          </Card>
         )}
       />
-
-      <TouchableOpacity style={styles.fab} onPress={() => navigation.navigate('AddLoan')}>
-        <Text style={styles.fabText}>+</Text>
-      </TouchableOpacity>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.background },
-  filters: { flexDirection: 'row', padding: 12, gap: 8 },
-  filterBtn: {
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: 20,
-    backgroundColor: COLORS.white,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  filterActive: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
-  filterText: { fontSize: 13, color: COLORS.text },
-  filterTextActive: { color: COLORS.white },
-  item: {
-    backgroundColor: COLORS.white,
-    marginHorizontal: 16,
-    marginVertical: 6,
-    padding: 16,
-    borderRadius: 10,
-  },
-  row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  loanNo: { fontSize: 14, fontWeight: '700', color: COLORS.primary },
-  badge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8 },
-  badgeActive: { backgroundColor: '#E8F5E9' },
-  badgeClosed: { backgroundColor: '#FFEBEE' },
-  badgeText: { fontSize: 11, fontWeight: '600', textTransform: 'uppercase' },
-  customer: { fontSize: 16, fontWeight: '600', marginTop: 6 },
-  amount: { fontSize: 14, color: COLORS.text, marginTop: 4 },
-  date: { fontSize: 12, color: COLORS.textLight, marginTop: 4 },
-  fab: {
-    position: 'absolute',
-    right: 20,
-    bottom: 20,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: COLORS.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 4,
-  },
-  fabText: { color: COLORS.white, fontSize: 28, fontWeight: '300' },
+  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, paddingBottom: 0 },
+  title: { fontSize: 17, fontWeight: '800', color: COLORS.text },
+  subtitle: { fontSize: 12, color: COLORS.textLight, marginTop: 2 },
+  addBtn: { backgroundColor: COLORS.primary, paddingVertical: 9, paddingHorizontal: 14, borderRadius: RADIUS.md },
+  addBtnText: { color: COLORS.white, fontWeight: '700', fontSize: 12 },
+  rowTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 },
+  loanNumber: { fontSize: 10, fontWeight: '700', color: '#92400E' },
+  customerName: { fontSize: 15, fontWeight: '700', color: COLORS.text, marginTop: 2 },
+  loanDate: { fontSize: 12, color: COLORS.textLight, marginTop: 2 },
+  footerRow: { borderTopWidth: 1, borderTopColor: COLORS.border, paddingTop: 10, marginBottom: 10 },
+  footerLabel: { fontSize: 10, color: COLORS.textLight },
+  footerValue: { fontSize: 15, fontWeight: '700', color: COLORS.text },
+  footerAccent: { fontSize: 12, color: COLORS.primary },
+  actionsRow: { flexDirection: 'row', gap: 8 },
+  waBtn: { flex: 1, backgroundColor: COLORS.successLight, borderWidth: 1, borderColor: '#A7F3D0', paddingVertical: 10, borderRadius: RADIUS.md, alignItems: 'center' },
+  waBtnText: { fontSize: 12, fontWeight: '700', color: '#065F46' },
+  detailBtn: { paddingHorizontal: 14, paddingVertical: 10, backgroundColor: '#F1F5F9', borderRadius: RADIUS.md, alignItems: 'center' },
+  detailBtnText: { fontSize: 12, fontWeight: '700', color: COLORS.text },
 });
