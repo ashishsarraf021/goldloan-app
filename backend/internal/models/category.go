@@ -1,9 +1,16 @@
 package models
 
-import "gorm.io/gorm"
+import (
+	"time"
+
+	"gorm.io/gorm"
+)
 
 type Category struct {
-	gorm.Model
-	ShopkeeperID uint   `json:"shopkeeper_id"`
-	Name         string `json:"name" gorm:"not null"`
+	ID           uint           `json:"id" gorm:"primaryKey"`
+	ShopkeeperID uint           `json:"shopkeeper_id"`
+	Name         string         `json:"name" gorm:"not null"`
+	CreatedAt    time.Time      `json:"created_at"`
+	UpdatedAt    time.Time      `json:"updated_at"`
+	DeletedAt    gorm.DeletedAt `json:"-" gorm:"index"`
 }
